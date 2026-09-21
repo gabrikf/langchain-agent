@@ -19,11 +19,12 @@ async function main(): Promise<void> {
 
   try {
     console.log('═'.repeat(60));
-    console.log('  🎵 Recomendador de Músicas com Memória (LangGraph)');
+    console.log('  🎓 Monitor de Estudos da Faculdade (turma de 2022)');
+    console.log('     Node.js + C# com memória (LangGraph)');
     console.log('═'.repeat(60));
     console.log('\nDigite suas mensagens abaixo. Digite "exit" para sair.\n');
 
-    const { graph, preferencesService } = await buildGraph();
+    const { graph, profileService } = await buildGraph();
 
     const { userId } = parseArgs();
     const actualUserId = userId || 'anonymous';
@@ -33,18 +34,18 @@ async function main(): Promise<void> {
       context: { userId: actualUserId }
     };
 
-    console.log(`👤 Usuário: ${actualUserId}`);
+    console.log(`👤 Aluno: ${actualUserId}`);
     console.log(`💬 Thread da Conversa: ${threadId}\n`);
 
-    const userContext = await preferencesService.getBasicInfo(actualUserId);
+    const userContext = await profileService.getBasicInfo(actualUserId);
     if (userContext) {
-      console.log(`📚 Informações do usuário carregadas:\n${userContext}\n`);
+      console.log(`📚 Informações do aluno carregadas:\n${userContext}\n`);
     }
 
     try {
       const initialMessage = userContext
-        ? 'Inicie a conversa de forma casual mencionando o que você sabe sobre mim e recomende uma música!'
-        : 'Olá! Me apresente de forma amigável e pergunte sobre meu nome e preferências musicais.';
+        ? 'Inicie a conversa de forma casual mencionando o que você sabe sobre mim e pergunte como pode ajudar nos estudos.'
+        : 'Olá! Me apresente de forma amigável e pergunte sobre meu curso, semestre e matérias da faculdade.';
 
       const result = await graph.invoke(
         {

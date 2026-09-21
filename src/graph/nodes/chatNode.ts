@@ -3,14 +3,14 @@ import { OpenRouterService } from '../../services/openrouterService.ts';
 import type { GraphState } from '../graph.ts';
 import { ChatResponseSchema, getSystemPrompt, getUserPromptTemplate } from '../../prompts/v1/chatResponse.ts';
 import { AIMessage, HumanMessage } from 'langchain';
-import { PreferencesService } from '../../services/preferencesService.ts';
+import { StudentProfileService } from '../../services/studentProfileService.ts';
 import { config } from '../../config.ts';
 
 
-export function createChatNode(llmClient: OpenRouterService, preferencesService: PreferencesService) {
+export function createChatNode(llmClient: OpenRouterService, profileService: StudentProfileService) {
   return async (state: GraphState, runtime?: Runtime): Promise<Partial<GraphState>> => {
     const userId = String(runtime?.context?.userId || state.userId || 'unknown')
-    const userContext = state.userContext ?? await preferencesService.getBasicInfo(userId)
+    const userContext = state.userContext ?? await profileService.getBasicInfo(userId)
     const systemPrompt = getSystemPrompt(userContext)
 
     const conversationHistory = state.messages
@@ -52,7 +52,7 @@ export function createChatNode(llmClient: OpenRouterService, preferencesService:
       messages: [
         new AIMessage(response.message)
       ],
-      extractedPreferences: response.shouldSavePreferences ? response.preferences : undefined,
+      extractedProfile: response.shouldSaveProfile ? response.profile : undefined,
       needsSummarization,
     };
   };

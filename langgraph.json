@@ -1,6 +1,6 @@
 {
   "graphs": {
-    "song_highlights": "./src/graph/factory.ts:graph"
+    "faculdade_2022": "./src/graph/factory.ts:graph"
   },
   "env": ".env"
 }

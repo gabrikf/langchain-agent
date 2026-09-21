@@ -4,10 +4,10 @@ import { HumanMessage } from '@langchain/core/messages';
 import { buildGraph } from '../src/graph/factory.ts';
 import { unlinkSync, existsSync } from 'node:fs';
 
-describe('Chat de Recomendação Musical - Testes E2E', () => {
+describe('Monitor de Estudos da Faculdade (2022) - Testes E2E', () => {
   let graph: any;
-  let preferencesService: any;
-  const testDbPath = './test-preferences.db';
+  let profileService: any;
+  const testDbPath = './test-faculdade.db';
 
   before(async () => {
     if (existsSync(testDbPath)) {
@@ -16,18 +16,18 @@ describe('Chat de Recomendação Musical - Testes E2E', () => {
 
     const built = await buildGraph(testDbPath);
     graph = built.graph;
-    preferencesService = built.preferencesService;
+    profileService = built.profileService;
   });
 
   after(async () => {
-    await preferencesService.close();
+    await profileService.close();
     if (existsSync(testDbPath)) {
       unlinkSync(testDbPath);
     }
   });
 
-  // it('Deve extrair e salvar preferências do usuário', async () => {
-  //   const userId = 'test-alex';
+  // it('Deve extrair e salvar o perfil acadêmico do aluno', async () => {
+  //   const userId = 'test-gabriel';
   //   const threadId = `${userId}-${Date.now()}`;
   //   const config = {
   //     configurable: { thread_id: threadId },
@@ -36,7 +36,7 @@ describe('Chat de Recomendação Musical - Testes E2E', () => {
 
   //   const response = await graph.invoke(
   //     {
-  //       messages: [new HumanMessage('Oi! Meu nome é Alex e eu amo rock e metal')],
+  //       messages: [new HumanMessage('Oi! Sou o Gabriel, faço ADS e em 2022 tô no 4º semestre. Tô apanhando de C#')],
   //       userId,
   //     },
   //     config
@@ -47,22 +47,13 @@ describe('Chat de Recomendação Musical - Testes E2E', () => {
   //   const lastMessage = response.messages.at(-1);
   //   assert.equal(lastMessage._getType(), 'ai', 'Última mensagem deve ser da IA');
 
-  //   const content = lastMessage.content.toLowerCase();
-  //   assert.ok(
-  //     content.includes('alex') || content.includes('rock') || content.includes('metal'),
-  //     'Resposta deve reconhecer as preferências'
-  //   );
-
   //   await new Promise(resolve => setTimeout(resolve, 500));
 
-  //   const savedPreferences = await preferencesService.getSummary(userId);
+  //   const savedProfile = await profileService.getSummary(userId);
 
-  //   assert.ok(savedPreferences, 'Preferências devem estar salvas');
-  //   assert.ok(savedPreferences.name?.toLowerCase().includes('alex'), 'Nome deve estar salvo');
-  //   assert.ok(
-  //     savedPreferences.favoriteGenres?.some((g: string) => g.toLowerCase().includes('rock') || g.toLowerCase().includes('metal')),
-  //     'Gêneros devem estar salvos'
-  //   );
+  //   assert.ok(savedProfile, 'Perfil deve estar salvo');
+  //   assert.ok(savedProfile.name?.toLowerCase().includes('gabriel'), 'Nome deve estar salvo');
+  //   assert.ok(savedProfile.semester?.includes('4'), 'Semestre deve estar salvo');
   // });
 
   // it('Deve manter múltiplas trocas e fazer sumarização', async () => {
@@ -74,177 +65,66 @@ describe('Chat de Recomendação Musical - Testes E2E', () => {
   //   };
 
   //   await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Oi! Sou a Sarah e adoro indie e eletrônica')],
-  //       userId,
-  //     },
+  //     { messages: [new HumanMessage('Oi! Sou a Sarah e estudo Engenharia de Software, gosto muito de Node.js')], userId },
   //     config
   //   );
 
-  //   const response2 = await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Gosto especialmente de Tame Impala e Daft Punk')],
-  //       userId,
-  //     },
+  //   await graph.invoke(
+  //     { messages: [new HumanMessage('Minha matéria mais difícil é Banco de Dados')], userId },
   //     config
   //   );
 
   //   await new Promise(resolve => setTimeout(resolve, 500));
 
-  //   const savedPreferences = await preferencesService.getSummary(userId);
+  //   const savedProfile = await profileService.getSummary(userId);
 
-  //   assert.ok(savedPreferences, 'Memórias devem existir');
-  //   assert.ok(savedPreferences.name?.toLowerCase().includes('sarah'), 'Nome deve estar salvo');
+  //   assert.ok(savedProfile, 'Perfil deve existir');
+  //   assert.ok(savedProfile.name?.toLowerCase().includes('sarah'), 'Nome deve estar salvo');
   //   assert.ok(
-  //     savedPreferences.favoriteGenres?.some((g: string) =>
-  //       g.toLowerCase().includes('indie') || g.toLowerCase().includes('eletrônica') || g.toLowerCase().includes('electronic')
-  //     ),
-  //     'Gêneros devem estar salvos'
+  //     savedProfile.technologies?.some((t: string) => t.toLowerCase().includes('node')),
+  //     'Tecnologias devem estar salvas'
   //   );
   // });
 
-  // it('Deve recuperar contexto em nova sessão', async () => {
+  // it('Deve recuperar o perfil em uma nova sessão', async () => {
   //   const userId = 'test-marcus';
-  //   const threadId = `${userId}-${Date.now()}`;
   //   const config = {
-  //     configurable: { thread_id: threadId },
+  //     configurable: { thread_id: `${userId}-${Date.now()}` },
   //     context: { userId }
   //   };
 
   //   await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Meu nome é Marcus, tenho 28 anos e adoro jazz e blues')],
-  //       userId,
-  //     },
+  //     { messages: [new HumanMessage('Meu nome é Marcus, curso Sistemas de Informação e faço projetos em C# com .NET')], userId },
   //     config
   //   );
 
   //   await new Promise(resolve => setTimeout(resolve, 500));
 
-  //   const savedPreferences = await preferencesService.getSummary(userId);
+  //   const savedProfile = await profileService.getSummary(userId);
 
-  //   assert.ok(savedPreferences, 'Deve recuperar informações básicas');
-  //   assert.ok(savedPreferences.name?.includes('Marcus'), 'Deve incluir nome');
-  //   assert.ok(savedPreferences.age === 28, 'Deve incluir idade');
+  //   assert.ok(savedProfile, 'Deve recuperar informações básicas');
+  //   assert.ok(savedProfile.name?.includes('Marcus'), 'Deve incluir nome');
+  //   assert.ok(savedProfile.course?.toLowerCase().includes('sistemas'), 'Deve incluir curso');
   //   assert.ok(
-  //     savedPreferences.favoriteGenres?.some((g: string) =>
-  //       g.toLowerCase().includes('jazz') || g.toLowerCase().includes('blues')
-  //     ),
-  //     'Deve incluir gêneros'
+  //     savedProfile.technologies?.some((t: string) => t.toLowerCase().includes('c#')),
+  //     'Deve incluir tecnologias'
   //   );
   // });
 
-  // it('Deve responder perguntas simples sem extrair preferências', async () => {
+  // it('Deve responder dúvidas técnicas sem extrair perfil', async () => {
   //   const userId = 'test-anonymous';
-  //   const threadId = `${userId}-${Date.now()}`;
   //   const config = {
-  //     configurable: { thread_id: threadId },
+  //     configurable: { thread_id: `${userId}-${Date.now()}` },
   //     context: { userId }
   //   };
 
   //   const response = await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Qual é sua música favorita?')],
-  //       userId,
-  //     },
+  //     { messages: [new HumanMessage('Qual a diferença entre classes abstratas e interfaces em C#?')], userId },
   //     config
   //   );
 
   //   assert.ok(response.messages.length > 0, 'Deve ter resposta');
   // });
-
-  // it('Deve manter histórico da conversa', async () => {
-  //   const userId = 'test-taylor';
-  //   const threadId = `${userId}-${Date.now()}`;
-  //   const config = {
-  //     configurable: { thread_id: threadId },
-  //     context: { userId }
-  //   };
-
-  //   await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Oi, sou Taylor e adoro música pop')],
-  //       userId,
-  //     },
-  //     config
-  //   );
-
-  //   const response2 = await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Pode recomendar algo animado?')],
-  //       userId,
-  //     },
-  //     config
-  //   );
-
-  //   assert.ok(response2.messages.length >= 2, 'Deve ter múltiplas mensagens no histórico');
-
-  //   const hasUserMessage = response2.messages.some((msg: any) =>
-  //     msg._getType() === 'human' && msg.content.includes('animado')
-  //   );
-
-  //   assert.ok(hasUserMessage, 'Deve manter histórico da conversa');
-  // });
-
-  // it('Deve compartilhar preferências entre múltiplas threads do mesmo usuário', async () => {
-  //   const userId = 'test-multi-thread-user';
-
-  //   // Primeira thread - usuário fornece preferências
-  //   const thread1Id = `${userId}-thread1-${Date.now()}`;
-  //   const config1 = {
-  //     configurable: { thread_id: thread1Id },
-  //     context: { userId }
-  //   };
-
-  //   await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Oi! Meu nome é Jordan e adoro reggae e ska')],
-  //       userId,
-  //     },
-  //     config1
-  //   );
-
-  //   await new Promise(resolve => setTimeout(resolve, 500));
-
-  //   // Segunda thread - mesmo usuário, nova conversa
-  //   const thread2Id = `${userId}-thread2-${Date.now() + 1}`;
-  //   const config2 = {
-  //     configurable: { thread_id: thread2Id },
-  //     context: { userId }
-  //   };
-
-  //   const response2 = await graph.invoke(
-  //     {
-  //       messages: [new HumanMessage('Me recomende algo para relaxar')],
-  //       userId,
-  //     },
-  //     config2
-  //   );
-
-  //   // Verificar que as preferências foram compartilhadas
-  //   const savedPreferences = await preferencesService.getSummary(userId);
-
-  //   assert.ok(savedPreferences, 'Preferências devem existir');
-  //   assert.ok(savedPreferences.name?.toLowerCase().includes('jordan'), 'Nome deve estar salvo');
-  //   assert.ok(
-  //     savedPreferences.favoriteGenres?.some((g: string) =>
-  //       g.toLowerCase().includes('reggae') || g.toLowerCase().includes('ska')
-  //     ),
-  //     'Gêneros devem estar salvos e compartilhados entre threads'
-  //   );
-
-  //   // Verificar que a thread 2 tem acesso ao contexto da thread 1
-  //   const lastMessage = response2.messages.at(-1);
-  //   const content = String(lastMessage?.content || '').toLowerCase();
-
-  //   // A IA deve saber o nome do usuário mesmo em uma thread diferente
-  //   assert.ok(
-  //     content.includes('jordan') || content.includes('reggae') || content.includes('ska'),
-  //     'A segunda thread deve ter acesso às preferências da primeira'
-  //   );
-  // });
-
-
 
   it('Deve manter histórico da conversa', async () => {
     const userId = 'test-taylor';
@@ -257,13 +137,13 @@ describe('Chat de Recomendação Musical - Testes E2E', () => {
     await graph.invoke(
       {
         messages: [
-          new HumanMessage('Oi, sou Taylor e adoro música pop'),
+          new HumanMessage('Oi, sou Taylor e estudo na faculdade'),
           new HumanMessage('Sou o Erick!'),
-          new HumanMessage('30 anos'),
-          new HumanMessage('Gosto de Guitarra'),
-          new HumanMessage('Pode recomendar algo animado?'),
-          new HumanMessage('Pode recomendar algo animado?'),
-          new HumanMessage('Pode recomendar algo animado?'),
+          new HumanMessage('Estou no 5º semestre'),
+          new HumanMessage('Gosto de programar em C#'),
+          new HumanMessage('Pode me ajudar com a matéria de POO?'),
+          new HumanMessage('Pode me ajudar com a matéria de POO?'),
+          new HumanMessage('Pode me ajudar com a matéria de POO?'),
         ],
         userId,
       },

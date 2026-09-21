@@ -26,7 +26,7 @@ const model = process.env.MODEL || 'arcee-ai/trinity-large-preview:free';
 export const config: ModelConfig = {
   apiKey: process.env.OPENROUTER_API_KEY!,
   httpReferer: '',
-  xTitle: 'IA Devs - Prompt Chaining Article Generator',
+  xTitle: 'Monitor de Estudos - Faculdade 2022 (Node.js + C#)',
   models: [
     model,
   ],
@@ -38,7 +38,7 @@ export const config: ModelConfig = {
   },
   temperature: 0.7,
   memory: {
-    dbUri: 'postgresql://postgres:mysecretpassword@localhost:5432/song_recommender',
+    dbUri: 'postgresql://postgres:mysecretpassword@localhost:5432/faculdade_2022',
   },
   maxMessagesToSummary: 2
 };

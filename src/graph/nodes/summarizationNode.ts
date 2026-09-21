@@ -3,10 +3,10 @@ import { type Runtime } from '@langchain/langgraph'
 import { OpenRouterService } from '../../services/openrouterService.ts';
 import type { GraphState } from '../graph.ts';
 import { type ConversationSummary, getSummarizationSystemPrompt, getSummarizationUserPrompt, SummarySchema } from '../../prompts/v1/summarization.ts';
-import { PreferencesService } from '../../services/preferencesService.ts';
+import { StudentProfileService } from '../../services/studentProfileService.ts';
 import { RemoveMessage } from '@langchain/core/messages';
 
-export function createSummarizationNode(llmClient: OpenRouterService, preferencesService: PreferencesService) {
+export function createSummarizationNode(llmClient: OpenRouterService, profileService: StudentProfileService) {
     return async (state: GraphState, runtime?: Runtime): Promise<Partial<GraphState>> => {
         const conversationHistory = state.messages.map(msg => ({
             role: HumanMessage.isInstance(msg) ? 'User' : 'AI',
@@ -36,7 +36,7 @@ export function createSummarizationNode(llmClient: OpenRouterService, preference
 
         const userId = String(runtime?.context?.userId || state.userId || 'unknown')
 
-        await preferencesService.storeSummary(
+        await profileService.storeSummary(
             userId, result.data,
         )
 

@@ -11,9 +11,9 @@ import type { BaseMessage } from '@langchain/core/messages';
 import { OpenRouterService } from '../services/openrouterService.ts';
 import { createChatNode } from './nodes/chatNode.ts';
 import { createSummarizationNode } from './nodes/summarizationNode.ts';
-import { createSavePreferencesNode } from './nodes/savePreferencesNode.ts';
-import { routeAfterChat, routeAfterSavePreferences } from './nodes/edgeConditions.ts';
-import { PreferencesService } from "../services/preferencesService.ts";
+import { createSaveProfileNode } from './nodes/saveProfileNode.ts';
+import { routeAfterChat, routeAfterSaveProfile } from './nodes/edgeConditions.ts';
+import { StudentProfileService } from "../services/studentProfileService.ts";
 import { type MemoryService } from "../services/memoryService.ts";
 
 const ChatStateAnnotation = z.object({
@@ -21,7 +21,7 @@ const ChatStateAnnotation = z.object({
     z.custom<BaseMessage[]>(),
     MessagesZodMeta),
   userContext: z.string().optional(),
-  extractedPreferences: z.any().optional(),
+  extractedProfile: z.any().optional(),
   needsSummarization: z.boolean().optional(),
   conversationSummary: z.any().optional(),
   userId: z.string().optional(),
@@ -31,13 +31,13 @@ export type GraphState = z.infer<typeof ChatStateAnnotation>;
 
 export function buildChatGraph(
   llmClient: OpenRouterService,
-  preferencesService: PreferencesService,
+  profileService: StudentProfileService,
   memoryService: MemoryService,
 ) {
   const graph = new StateGraph(ChatStateAnnotation)
-    .addNode('chat', createChatNode(llmClient, preferencesService))
-    .addNode('savePreferences', createSavePreferencesNode(preferencesService))
-    .addNode('summarize', createSummarizationNode(llmClient, preferencesService))
+    .addNode('chat', createChatNode(llmClient, profileService))
+    .addNode('saveProfile', createSaveProfileNode(profileService))
+    .addNode('summarize', createSummarizationNode(llmClient, profileService))
 
     .addEdge(START, 'chat')
 
@@ -45,15 +45,15 @@ export function buildChatGraph(
       'chat',
       routeAfterChat,
       {
-        savePreferences: 'savePreferences',
+        saveProfile: 'saveProfile',
         summarize: 'summarize',
         end: END,
       }
     )
 
     .addConditionalEdges(
-      'savePreferences',
-      routeAfterSavePreferences,
+      'saveProfile',
+      routeAfterSaveProfile,
       {
         summarize: 'summarize',
         end: END,
