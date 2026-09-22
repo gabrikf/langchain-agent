@@ -43,7 +43,7 @@
     "@huggingface/inference": "^4.13.30",
     "@huggingface/transformers": "^4.3.0",
     "@langchain/core": "^1.2.11",
-    "@langchain/langgraph": "^1.4.16",
+    "@langchain/langgraph": "^1.4.15",
     "@langchain/langgraph-checkpoint-postgres": "^1.0.5",
     "@langchain/langgraph-checkpoint-sqlite": "^1.0.4",
     "@langchain/openai": "^1.5.13",
