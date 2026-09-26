@@ -16,7 +16,8 @@ export type ModelConfig = {
   memory: {
     dbUri: string;
   };
-  maxMessagesToSummary: number;
+  /** Summarize when conversation messages exceed this many estimated tokens. */
+  maxContextTokensToSummary: number;
 };
 
 console.assert(process.env.OPENROUTER_API_KEY, 'OPENROUTER_API_KEY is not set in environment variables');
@@ -39,5 +40,5 @@ export const config: ModelConfig = {
       process.env.DATABASE_URL ||
       'postgresql://postgres:mysecretpassword@localhost:5432/industrial_assets',
   },
-  maxMessagesToSummary: 6,
+  maxContextTokensToSummary: Number(process.env.MAX_CONTEXT_TOKENS_TO_SUMMARY || 32000),
 };

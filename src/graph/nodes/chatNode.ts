@@ -11,6 +11,7 @@ import {
 import { AIMessage, HumanMessage } from "langchain";
 import { PreferenceService } from "../../services/preferenceService.ts";
 import { config } from "../../config.ts";
+import { estimateMessagesTokens, estimateTokens } from "../../utils/tokens.ts";
 
 export function createChatNode(
   llmClient: OpenRouterService,
@@ -63,15 +64,21 @@ export function createChatNode(
         ? prefsResult.data.preferences
         : undefined;
 
-    const totalMessages = state.messages.length;
-    const needsSummarization = totalMessages >= config.maxMessagesToSummary;
+    const outgoing =
+      chatResult.messages.length > 0
+        ? chatResult.messages.map((msg) => new AIMessage(msg.content)) //TODO: verificar se é necessário mapear para AIMessage
+        : [new AIMessage(chatResult.content)];
+
+    // Trigger summary by estimated context size, not message count.
+    const contextTokens =
+      estimateMessagesTokens(state.messages) +
+      estimateMessagesTokens(outgoing) +
+      estimateTokens(userContext ?? '');
+    const needsSummarization = contextTokens >= config.maxContextTokensToSummary;
 
     return {
       // Prefer full tool trail for Studio; fall back to final text.
-      messages:
-        chatResult.messages.length > 0
-          ? chatResult.messages.map((msg) => new AIMessage(msg.content)) //TODO: verificar se é necessário mapear para AIMessage
-          : [new AIMessage(chatResult.content)],
+      messages: outgoing,
       extractedPreferences: extracted,
       needsSummarization,
     };
