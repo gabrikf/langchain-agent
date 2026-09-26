@@ -19,33 +19,33 @@ async function main(): Promise<void> {
 
   try {
     console.log('═'.repeat(60));
-    console.log('  🎓 Monitor de Estudos da Faculdade (turma de 2022)');
-    console.log('     Node.js + C# com memória (LangGraph)');
+    console.log('  Industrial Asset Agent');
+    console.log('  Vibration · Temperature · Failure prevention');
     console.log('═'.repeat(60));
     console.log('\nDigite suas mensagens abaixo. Digite "exit" para sair.\n');
 
-    const { graph, profileService } = await buildGraph();
+    const { graph, preferenceService } = await buildGraph();
 
     const { userId } = parseArgs();
     const actualUserId = userId || 'anonymous';
     const threadId = `${actualUserId}-${Date.now()}`;
     const config = {
       configurable: { thread_id: threadId },
-      context: { userId: actualUserId }
+      context: { userId: actualUserId },
     };
 
-    console.log(`👤 Aluno: ${actualUserId}`);
-    console.log(`💬 Thread da Conversa: ${threadId}\n`);
+    console.log(`Operador: ${actualUserId}`);
+    console.log(`Thread: ${threadId}\n`);
 
-    const userContext = await profileService.getBasicInfo(actualUserId);
+    const userContext = await preferenceService.getBasicInfo(actualUserId);
     if (userContext) {
-      console.log(`📚 Informações do aluno carregadas:\n${userContext}\n`);
+      console.log(`Contexto carregado:\n${userContext}\n`);
     }
 
     try {
       const initialMessage = userContext
-        ? 'Inicie a conversa de forma casual mencionando o que você sabe sobre mim e pergunte como pode ajudar nos estudos.'
-        : 'Olá! Me apresente de forma amigável e pergunte sobre meu curso, semestre e matérias da faculdade.';
+        ? 'Inicie a conversa de forma objetiva mencionando o contexto conhecido e pergunte como pode ajudar com vibração, temperatura ou prevenção de falhas.'
+        : 'Olá! Me apresente de forma objetiva e pergunte qual ativo ou sintoma o operador quer analisar.';
 
       const result = await graph.invoke(
         {
@@ -53,13 +53,13 @@ async function main(): Promise<void> {
           userContext,
           userId: actualUserId,
         },
-        config
+        config,
       );
 
       const greeting = result.messages[result.messages.length - 1];
       console.log(`AI: ${greeting.content}\n`);
     } catch (error) {
-      console.error('❌ Erro ao iniciar conversa:', (error as Error).message);
+      console.error('Erro ao iniciar conversa:', (error as Error).message);
     }
 
     while (true) {
@@ -67,7 +67,7 @@ async function main(): Promise<void> {
 
       if (!userInput.trim()) continue;
       if (userInput.toLowerCase() === 'exit') {
-        console.log('\n👋 Até mais!\n');
+        console.log('\nAté mais!\n');
         break;
       }
 
@@ -77,22 +77,23 @@ async function main(): Promise<void> {
             messages: [new HumanMessage(userInput)],
             userId: actualUserId,
           },
-          config
+          config,
         );
 
         const lastMessage = result.messages[result.messages.length - 1];
         console.log(`\nAI: ${lastMessage.content}\n`);
-
       } catch (error) {
-        console.error('\n❌ Erro ao gerar resposta:', error instanceof Error ? error.message : 'Erro desconhecido');
+        console.error(
+          '\nErro ao gerar resposta:',
+          error instanceof Error ? error.message : 'Erro desconhecido',
+        );
         console.log('AI: Desculpe, encontrei um erro. Pode tentar novamente?\n');
       }
     }
 
     readline.close();
-
   } catch (error) {
-    console.error('\n❌ Erro fatal:', (error as Error).message);
+    console.error('\nErro fatal:', (error as Error).message);
     console.error('\nStack trace:', (error as Error).stack);
     process.exit(1);
   }

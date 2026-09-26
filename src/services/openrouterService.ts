@@ -1,8 +1,9 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { config, type ModelConfig } from '../config.ts';
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
-import type { z } from 'zod/v3';
-import { createAgent, providerStrategy } from 'langchain';
+import { ChatOpenAI } from "@langchain/openai";
+import { config, type ModelConfig } from "../config.ts";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
+import type { z } from "zod/v3";
+import { createAgent, providerStrategy } from "langchain";
+import { getMCPTools } from "./mcpService.ts";
 
 export type LLMResponse = {
   model: string;
@@ -12,19 +13,20 @@ export type LLMResponse = {
 export class OpenRouterService {
   private llmClient: ChatOpenAI;
   private config: ModelConfig;
+  private tools: any[];
 
   constructor(configOverride?: ModelConfig) {
     this.config = configOverride ?? config;
-
+    this.tools = [];
     this.llmClient = new ChatOpenAI({
       apiKey: this.config.apiKey,
       modelName: this.config.models[0],
       temperature: this.config.temperature,
       configuration: {
-        baseURL: 'https://openrouter.ai/api/v1',
+        baseURL: "https://openrouter.ai/api/v1",
         defaultHeaders: {
-          'HTTP-Referer': this.config.httpReferer,
-          'X-Title': this.config.xTitle,
+          "HTTP-Referer": this.config.httpReferer,
+          "X-Title": this.config.xTitle,
         },
       },
 
@@ -34,16 +36,22 @@ export class OpenRouterService {
       },
     });
   }
-
+  async #getTools() {
+    if (!this.tools.length) {
+      this.tools = await getMCPTools();
+    }
+    return this.tools;
+  }
   async generateStructured<T>(
     systemPrompt: string,
     userPrompt: string,
     schema: z.ZodSchema<T>,
   ) {
     try {
+      const tools = await this.#getTools();
       const agent = createAgent({
         model: this.llmClient,
-        tools: [],
+        tools,
         responseFormat: providerStrategy(schema),
       });
 
@@ -58,12 +66,11 @@ export class OpenRouterService {
         success: true,
         data: data.structuredResponse as T,
       };
-
     } catch (error) {
-      console.error('🔴 LLM Error:', error);
+      console.error("🔴 LLM Error:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }

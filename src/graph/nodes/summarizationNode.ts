@@ -1,54 +1,52 @@
 import { HumanMessage } from 'langchain';
-import { type Runtime } from '@langchain/langgraph'
+import { type Runtime } from '@langchain/langgraph';
 import { OpenRouterService } from '../../services/openrouterService.ts';
 import type { GraphState } from '../graph.ts';
-import { type ConversationSummary, getSummarizationSystemPrompt, getSummarizationUserPrompt, SummarySchema } from '../../prompts/v1/summarization.ts';
-import { StudentProfileService } from '../../services/studentProfileService.ts';
+import {
+  type ConversationSummary,
+  getSummarizationSystemPrompt,
+  getSummarizationUserPrompt,
+  SummarySchema,
+} from '../../prompts/v1/summarization.ts';
+import { PreferenceService } from '../../services/preferenceService.ts';
 import { RemoveMessage } from '@langchain/core/messages';
 
-export function createSummarizationNode(llmClient: OpenRouterService, profileService: StudentProfileService) {
-    return async (state: GraphState, runtime?: Runtime): Promise<Partial<GraphState>> => {
-        const conversationHistory = state.messages.map(msg => ({
-            role: HumanMessage.isInstance(msg) ? 'User' : 'AI',
-            content: msg.text
-        }))
+export function createSummarizationNode(
+  llmClient: OpenRouterService,
+  preferenceService: PreferenceService,
+) {
+  return async (state: GraphState, runtime?: Runtime): Promise<Partial<GraphState>> => {
+    const conversationHistory = state.messages.map((msg) => ({
+      role: HumanMessage.isInstance(msg) ? 'User' : 'AI',
+      content: msg.text,
+    }));
 
-        const previousSummary = state.conversationSummary as ConversationSummary | undefined
-        const systemPrompt = getSummarizationSystemPrompt()
-        const userPrompt = getSummarizationUserPrompt(
-            conversationHistory,
-            previousSummary,
-        )
+    const previousSummary = state.conversationSummary as ConversationSummary | undefined;
+    const systemPrompt = getSummarizationSystemPrompt();
+    const userPrompt = getSummarizationUserPrompt(conversationHistory, previousSummary);
 
-        const result = await llmClient.generateStructured(
-            systemPrompt,
-            userPrompt,
-            SummarySchema,
-        )
+    const result = await llmClient.generateStructured(
+      systemPrompt,
+      userPrompt,
+      SummarySchema,
+    );
 
-        if (result.error || !result.data) {
-            console.error('❌ Falha ao sumarizar conversa:', result.error);
+    if (result.error || !result.data) {
+      console.error('❌ Falha ao sumarizar conversa:', result.error);
+      return { needsSummarization: false };
+    }
 
-            return {
-                needsSummarization: false
-            }
-        }
+    const userId = String(runtime?.context?.userId || state.userId || 'unknown');
+    await preferenceService.storeSummary(userId, result.data);
 
-        const userId = String(runtime?.context?.userId || state.userId || 'unknown')
+    const deleteMessages = state.messages
+      .slice(0, -2)
+      .map((m) => new RemoveMessage({ id: m.id as string }));
 
-        await profileService.storeSummary(
-            userId, result.data,
-        )
-
-        const deleteMessages = state.messages
-            .slice(0, -2)
-            .map(m => new RemoveMessage({ id: m.id as string }))
-
-
-        return {
-            messages: deleteMessages,
-            conversationSummary: result.data,
-            needsSummarization: false,
-        };
+    return {
+      messages: deleteMessages,
+      conversationSummary: result.data,
+      needsSummarization: false,
     };
+  };
 }

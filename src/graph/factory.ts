@@ -2,22 +2,20 @@ import { OpenRouterService } from '../services/openrouterService.ts';
 import { config } from '../config.ts';
 import { buildChatGraph } from './graph.ts';
 import { createMemoryService } from '../services/memoryService.ts';
-import { StudentProfileService } from '../services/studentProfileService.ts';
+import { PreferenceService } from '../services/preferenceService.ts';
 
-export async function buildGraph(dbPath: string = './faculdade.db') {
+export async function buildGraph() {
   const llmClient = new OpenRouterService(config);
+  const memoryService = await createMemoryService();
+  const preferenceService = new PreferenceService();
 
-  const memoryService = await createMemoryService()
-  const profileService = new StudentProfileService(dbPath)
-  const graph = buildChatGraph(
-    llmClient,
-    profileService,
-    memoryService
-  );
+  await preferenceService.setup();
+
+  const graph = buildChatGraph(llmClient, preferenceService, memoryService);
 
   return {
     graph,
-    profileService,
+    preferenceService,
   };
 }
 

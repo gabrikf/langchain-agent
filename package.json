@@ -1,15 +1,16 @@
 {
-  "name": "faculdade-2022-assistant",
-  "version": "1.0.0",
-  "description": "Monitor de estudos da faculdade (turma de 2022) com memória via LangGraph, cobrindo Node.js e C#",
+  "name": "industrial-asset-agent",
+  "version": "0.1.0",
+  "description": "LangGraph agent base for industrial assets — vibration, temperature and failure prevention",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f postgres",
+    "db:migrate": "node --experimental-strip-types --env-file .env src/db/migrate.ts",
     "chat": "node --experimental-strip-types --env-file .env src/index.ts",
-    "chat:aluno": "node --experimental-strip-types --env-file .env src/index.ts --user aluno-teste",
+    "chat:operator": "node --experimental-strip-types --env-file .env src/index.ts --user operator-teste",
     "test": "node --experimental-strip-types --env-file .env --test tests/**/*.test.ts",
     "test:dev": "node --experimental-strip-types --env-file .env --test --watch tests/**/*.test.ts",
     "langgraph:serve": "langgraphjs dev"
@@ -17,16 +18,16 @@
   "keywords": [
     "langchain",
     "langgraph",
-    "memory",
-    "libsql",
-    "sqlite",
-    "faculdade",
-    "nodejs",
-    "csharp",
-    "estudos",
+    "industrial",
+    "assets",
+    "vibration",
+    "temperature",
+    "predictive-maintenance",
+    "failure-prevention",
+    "postgres",
     "openrouter"
   ],
-  "author": "erickwendel",
+  "author": "",
   "license": "MIT",
   "devDependencies": {
     "@langchain/langgraph-cli": "^1.5.0",
@@ -36,27 +37,19 @@
   "engines": {
     "node": ">=24.10.0"
   },
-  "overrides": {
-    "better-sqlite3": "^13.0.3"
-  },
   "dependencies": {
-    "@huggingface/inference": "^4.13.30",
-    "@huggingface/transformers": "^4.3.0",
     "@langchain/core": "^1.2.11",
     "@langchain/langgraph": "^1.4.15",
     "@langchain/langgraph-checkpoint-postgres": "^1.0.5",
-    "@langchain/langgraph-checkpoint-sqlite": "^1.0.4",
+    "@langchain/mcp-adapters": "^1.1.4",
     "@langchain/openai": "^1.5.13",
-    "@libsql/client": "^0.18.0",
     "@openrouter/sdk": "^1.3.5",
-    "better-sqlite3": "^13.0.3",
     "knex": "^3.3.0",
     "langchain": "^1.5.11",
+    "pg": "^8.16.3",
     "zod": "^4.6.5"
   },
   "allowScripts": {
-    "better-sqlite3@13.0.3": true,
-    "onnxruntime-node@1.30.0": true,
     "protobufjs@7.6.6": true,
     "@openrouter/sdk@1.3.5": true
   }

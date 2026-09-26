@@ -1,6 +1,6 @@
 {
   "graphs": {
-    "faculdade_2022": "./src/graph/factory.ts:graph"
+    "industrial_assets": "./src/graph/factory.ts:graph"
   },
   "env": ".env"
 }
