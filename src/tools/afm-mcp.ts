@@ -7,12 +7,11 @@ export const getAFMTool = () => {
   //   }
 
   return {
-    "afm-mcp": {
-      transport: "http" as const,
-      url: "https://wendi.mcp.staging.birmind.cloud/mcp",
+    'afm-mcp': {
+      transport: 'http' as const,
+      url: 'https://wendi.mcp.staging.birmind.cloud/mcp',
       headers: {
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzJjYTg3Nzk0NGYwN2RlZjFiMDNhNmMiLCJzdWJ0eXBlIjoiZXhwZXJpZW5jZVVzZXIiLCJhcHAiOiI1ZWVkMDEyNmVjNTlhNzAwMDg5MDJiNDUiLCJpc3MiOiJMb3NhbnRFeHBlcmllbmNlIiwiaWF0IjoxNzkwNDI2NTA3fQ.be0w0TRS9mMi4k24uvb9b6DgF9ju7HfqHeb9NF5vINA",
+        Authorization: `Bearer ${process.env.SERVICE_TOKEN || 'YOUR_SERVICE_TOKEN'}`,
       },
     },
   };
